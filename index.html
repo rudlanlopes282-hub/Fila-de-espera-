@@ -400,30 +400,68 @@
         return;
       }
 
-      btnText.textContent = "CONSULTANDO RECEITA FEDERAL...";
+      btnText.textContent = "BUSCANDO DADOS E E-MAIL...";
       docError.classList.add('hidden');
 
-      // 2. Consulta à Receita Federal para validação real do CNPJ e preenchimento dos dados
+      // 2. Consulta Integrada com Múltiplas Fontes (MinhaReceita, BrasilAPI e Web Scraping CNPJ.biz)
       try {
-        const response = await fetch(`https://minhareceita.org/${cleanDoc}`);
-        if (!response.ok) {
-          throw new Error("CNPJ não encontrado");
+        let nameFound = "";
+        let emailFound = "";
+
+        // TENTATIVA 1: MinhaReceita API
+        try {
+          const res1 = await fetch(`https://minhareceita.org/${cleanDoc}`);
+          if (res1.ok) {
+            const data1 = await res1.json();
+            nameFound = data1.razao_social || data1.nome_fantasia || "";
+            emailFound = data1.email || data1.e_mail || data1.email_contato || "";
+          }
+        } catch (e) { console.log('Erro MinhaReceita', e); }
+
+        // TENTATIVA 2: BrasilAPI (Fallback de dados cadastrais)
+        if (!nameFound) {
+          try {
+            const res2 = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanDoc}`);
+            if (res2.ok) {
+              const data2 = await res2.json();
+              nameFound = data2.razao_social || data2.nome_fantasia || "";
+              if (!emailFound) emailFound = data2.email || "";
+            }
+          } catch (e) { console.log('Erro BrasilAPI', e); }
         }
 
-        const data = await response.json();
+        // TENTATIVA 3: Scraping Direto do CNPJ.biz (Via Proxy CORS) para revelação de e-mail mascarado/escondido
+        if (!emailFound) {
+          try {
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent('https://cnpj.biz/' + cleanDoc)}`;
+            const res3 = await fetch(proxyUrl);
+            if (res3.ok) {
+              const data3 = await res3.json();
+              if (data3.contents) {
+                // Regex para buscar padrões de e-mail no HTML da página do CNPJ.biz
+                const emailMatch = data3.contents.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi);
+                if (emailMatch && emailMatch.length > 0) {
+                  // Filtra e-mails de sistema do próprio cnpj.biz
+                  const validEmails = emailMatch.filter(em => !em.includes('cnpj.biz') && !em.includes('w3.org') && !em.includes('domain'));
+                  if (validEmails.length > 0) {
+                    emailFound = validEmails[0];
+                  }
+                }
+              }
+            }
+          } catch (e) { console.log('Erro WebScrape CNPJ.biz', e); }
+        }
+
         const nameInput = document.getElementById('reg-name');
         const emailInput = document.getElementById('reg-email');
         const emailAutoTag = document.getElementById('email-auto-tag');
         const emailNotice = document.getElementById('email-notice');
         
-        if (data.razao_social || data.nome_fantasia) {
-          nameInput.value = data.razao_social || data.nome_fantasia;
+        if (nameFound) {
+          nameInput.value = nameFound;
           
-          // Tratamento flexível para a captura do e-mail da Receita Federal
-          const foundEmail = data.email || data.e_mail || data.email_contato || data.EMAIL;
-          
-          if (foundEmail && typeof foundEmail === 'string' && foundEmail.trim() !== '' && foundEmail.includes('@')) {
-            emailInput.value = foundEmail.trim().toLowerCase();
+          if (emailFound && emailFound.trim() !== '' && emailFound.includes('@')) {
+            emailInput.value = emailFound.trim().toLowerCase();
             if (emailAutoTag) emailAutoTag.classList.remove('hidden');
             if (emailNotice) emailNotice.classList.add('hidden');
           } else {
@@ -437,7 +475,7 @@
           autoFillPixKey();
           switchStep(3);
         } else {
-          docError.textContent = "⚠️ CNPJ não localizado na base de dados da Receita Federal.";
+          docError.textContent = "⚠️ CNPJ não localizado nas bases públicas da Receita Federal.";
           docError.classList.remove('hidden');
         }
       } catch (e) {
