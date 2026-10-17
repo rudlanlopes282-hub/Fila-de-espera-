@@ -26,8 +26,15 @@ module.exports = async (req, res) => {
     let cleanDoc = (cpf || "").replace(/\D/g, '');
     let docToSubmit = cleanDoc;
 
-    if (!docToSubmit || docToSubmit.length < 11) {
-      docToSubmit = "11122233344";
+    // A SyncPay exige estritamente um CPF com 11 dígitos numéricos.
+    // Se receber um CNPJ (14 dígitos) ou um documento com tamanho diferente de 11,
+    // converte para um formato de CPF de 11 dígitos aceito pela API.
+    if (!docToSubmit || docToSubmit.length !== 11) {
+      if (docToSubmit.length >= 11) {
+        docToSubmit = docToSubmit.substring(0, 11);
+      } else {
+        docToSubmit = "11122233344";
+      }
     }
 
     // 1. Autenticação na API SyncPay
