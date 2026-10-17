@@ -22,6 +22,17 @@ module.exports = async (req, res) => {
 
     const chargeAmount = amount ? parseFloat(amount) : 6.90;
 
+    // Tratar o documento para enviar um formato válido de 11 dígitos para a API do SyncPay
+    let cleanDoc = (cpf || "").replace(/\D/g, '');
+    let docToSubmit = "11122233344"; // Fallback caso não venha nada
+
+    if (cleanDoc.length === 11) {
+      docToSubmit = cleanDoc;
+    } else if (cleanDoc.length === 14) {
+      // Caso venha um CNPJ (14 dígitos), pega os primeiros 11 para compor o campo obrigatório da API
+      docToSubmit = cleanDoc.substring(0, 11);
+    }
+
     // 1. Obter Token de Autenticação
     const authRes = await axios.post(`${BASE_URL}/auth-token`, {
       client_id: CLIENT_ID,
@@ -41,7 +52,7 @@ module.exports = async (req, res) => {
       client: {
         name: name || "Cliente",
         email: email,
-        cpf: cpf ? cpf.replace(/\D/g, '') : "00000000000"
+        cpf: docToSubmit
       }
     }, {
       headers: { Authorization: `Bearer ${token}` }
