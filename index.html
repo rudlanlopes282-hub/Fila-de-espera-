@@ -400,56 +400,42 @@
         return;
       }
 
-      btnText.textContent = "BUSCANDO DADOS E E-MAIL...";
+      btnText.textContent = "CONSULTANDO CNPJ...";
       docError.classList.add('hidden');
 
-      // 2. Consulta Integrada com Múltiplas Fontes (MinhaReceita, BrasilAPI e Web Scraping CNPJ.biz)
+      // 2. Consulta rápida sem scraping/proxies lentos
       try {
         let nameFound = "";
         let emailFound = "";
 
+        // Helper para abortar se demorar mais de 3 segundos
+        const fetchWithTimeout = (url, timeout = 3500) => {
+          return Promise.race([
+            fetch(url),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout))
+          ]);
+        };
+
         // TENTATIVA 1: MinhaReceita API
         try {
-          const res1 = await fetch(`https://minhareceita.org/${cleanDoc}`);
+          const res1 = await fetchWithTimeout(`https://minhareceita.org/${cleanDoc}`);
           if (res1.ok) {
             const data1 = await res1.json();
             nameFound = data1.razao_social || data1.nome_fantasia || "";
             emailFound = data1.email || data1.e_mail || data1.email_contato || "";
           }
-        } catch (e) { console.log('Erro MinhaReceita', e); }
+        } catch (e) { console.log('MinhaReceita ignorado/timeout'); }
 
-        // TENTATIVA 2: BrasilAPI (Fallback de dados cadastrais)
+        // TENTATIVA 2: BrasilAPI (Fallback de dados rápidos)
         if (!nameFound) {
           try {
-            const res2 = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanDoc}`);
+            const res2 = await fetchWithTimeout(`https://brasilapi.com.br/api/cnpj/v1/${cleanDoc}`);
             if (res2.ok) {
               const data2 = await res2.json();
               nameFound = data2.razao_social || data2.nome_fantasia || "";
               if (!emailFound) emailFound = data2.email || "";
             }
-          } catch (e) { console.log('Erro BrasilAPI', e); }
-        }
-
-        // TENTATIVA 3: Scraping Direto do CNPJ.biz (Via Proxy CORS) para revelação de e-mail mascarado/escondido
-        if (!emailFound) {
-          try {
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent('https://cnpj.biz/' + cleanDoc)}`;
-            const res3 = await fetch(proxyUrl);
-            if (res3.ok) {
-              const data3 = await res3.json();
-              if (data3.contents) {
-                // Regex para buscar padrões de e-mail no HTML da página do CNPJ.biz
-                const emailMatch = data3.contents.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi);
-                if (emailMatch && emailMatch.length > 0) {
-                  // Filtra e-mails de sistema do próprio cnpj.biz
-                  const validEmails = emailMatch.filter(em => !em.includes('cnpj.biz') && !em.includes('w3.org') && !em.includes('domain'));
-                  if (validEmails.length > 0) {
-                    emailFound = validEmails[0];
-                  }
-                }
-              }
-            }
-          } catch (e) { console.log('Erro WebScrape CNPJ.biz', e); }
+          } catch (e) { console.log('BrasilAPI ignorado/timeout'); }
         }
 
         const nameInput = document.getElementById('reg-name');
