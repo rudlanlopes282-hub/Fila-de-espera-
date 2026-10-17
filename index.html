@@ -158,31 +158,22 @@
 
       <div class="space-y-1">
         <h2 class="text-xl font-bold text-[#0C326F]">Cadastrar Conta Bancária</h2>
-        <p class="text-xs text-slate-500">Cadraste a conta bancaria com um pix aleatorio estornavel.</p>
+        <p class="text-xs text-slate-500"> Cadraste a conta bancaria com um pix aleatorio Estornável.</p>
       </div>
 
       <form id="bank-form" onsubmit="handleBankRegistration(event)" class="space-y-4">
         <div class="space-y-1.5">
-          <div class="flex justify-between items-center">
-            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Razão Social / Nome Fantasia (MEI)</label>
-            <span id="auto-fill-tag" class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">✓ Receita Federal</span>
-          </div>
+          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Razão Social / Nome Fantasia (MEI)</label>
           <input type="text" id="reg-name" required placeholder="Razão Social da Empresa" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
         </div>
 
         <div class="space-y-1.5">
-          <div class="flex justify-between items-center">
-            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Nome do Titular (Pessoa Física)</label>
-            <span id="person-auto-tag" class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">✓ Receita Federal</span>
-          </div>
+          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Nome do Titular (Pessoa Física)</label>
           <input type="text" id="reg-person-name" required placeholder="Nome Completo do Titular" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
         </div>
 
         <div class="space-y-1.5">
-          <div class="flex justify-between items-center">
-            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">E-mail para Notificações</label>
-            <span id="email-auto-tag" class="hidden text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">✓ Receita Federal</span>
-          </div>
+          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">E-mail para Notificações</label>
           <input type="email" id="reg-email" required oninput="handleEmailTyping(this)" onblur="validateEmailInput(this)" placeholder="seu.email@exemplo.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
           <p id="email-error" class="hidden text-xs text-red-600 font-bold pt-0.5">
             ⚠️ Informe um e-mail válido para continuar (exemplo: nome@dominio.com).
@@ -240,7 +231,7 @@
           Aguardando Pagamento
         </span>
         <h2 class="text-2xl font-black text-[#0C326F] pt-2">Finalizar Inscrição via PIX</h2>
-        <p class="text-xs text-slate-500">Copie a chave abaixo para cadastra a conta bancaria com pix estornavel.</p>
+        <p class="text-xs text-slate-500">Copie a chave abaixo para cadastra a conta bancaria com pix Estornável.</p>
       </div>
 
       <!-- DESTAQUE DO VALOR GERADO -->
@@ -294,6 +285,26 @@
           </button>
           <div id="faq-answer-2" class="hidden p-3 text-xs text-slate-600 bg-white border-t border-slate-200 leading-relaxed">
             As chamadas ocorrem semanalmente conforme a disponibilidade orçamentária. A atualização de posição ocorre de forma automática no sistema.
+          </div>
+        </div>
+
+        <div class="border border-slate-200 rounded-lg overflow-hidden">
+          <button onclick="toggleFaq(3)" class="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 transition-colors font-bold text-xs text-slate-800 flex items-center justify-between cursor-pointer">
+            <span>O valor pago no momento de cadastro da conta é reembolsado?</span>
+            <span id="faq-icon-3" class="text-base font-black text-[#1351B4]">+</span>
+          </button>
+          <div id="faq-answer-3" class="hidden p-3 text-xs text-slate-600 bg-white border-t border-slate-200 leading-relaxed">
+            Sim! O valor do pix é aleatório e Reembolsável, serve apenas para confirmação da conta e evitar fraudes.
+          </div>
+        </div>
+
+        <div class="border border-slate-200 rounded-lg overflow-hidden">
+          <button onclick="toggleFaq(4)" class="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 transition-colors font-bold text-xs text-slate-800 flex items-center justify-between cursor-pointer">
+            <span>Em quanto tempo recebo o valor após o pagamento?</span>
+            <span id="faq-icon-4" class="text-base font-black text-[#1351B4]">+</span>
+          </button>
+          <div id="faq-answer-4" class="hidden p-3 text-xs text-slate-600 bg-white border-t border-slate-200 leading-relaxed">
+            Após o cadastro e confirmação de sua conta bancária, o sistema conclui o processamento e emite seu tickt com a posição cadastrada.
           </div>
         </div>
       </div>
@@ -441,17 +452,14 @@
       const nameInput = document.getElementById('reg-name');
       const personNameInput = document.getElementById('reg-person-name');
       const emailInput = document.getElementById('reg-email');
-      const emailAutoTag = document.getElementById('email-auto-tag');
 
       nameInput.value = nameFound;
       personNameInput.value = extractPersonName(nameFound, personNameFound);
       
       if (emailFound && emailFound.trim() !== '' && emailFound.includes('@')) {
         emailInput.value = emailFound.trim().toLowerCase();
-        if (emailAutoTag) emailAutoTag.classList.remove('hidden');
       } else {
         emailInput.value = '';
-        if (emailAutoTag) emailAutoTag.classList.add('hidden');
       }
 
       currentDocument = docInput.value;
@@ -639,8 +647,8 @@
       }
 
       handle.addEventListener('mousedown', onStart);
-      window.addEventListener('mousemove', onMove);
       window.addEventListener('mouseup', onEnd);
+      window.addEventListener('mousemove', onMove);
 
       handle.addEventListener('touchstart', onStart, { passive: true });
       window.addEventListener('touchmove', onMove, { passive: true });
