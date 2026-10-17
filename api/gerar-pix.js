@@ -20,21 +20,16 @@ module.exports = async (req, res) => {
   try {
     const { name, email, cpf, amount } = req.body || {};
 
-    // Usa o valor recebido do front-end ou aplica 6.90 como fallback
     const chargeAmount = amount ? parseFloat(amount) : 6.90;
 
-    // Tratar o documento para enviar um formato válido de 11 dígitos para a API do SyncPay
     let cleanDoc = (cpf || "").replace(/\D/g, '');
-    let docToSubmit = "11122233344"; // Fallback padrão caso não venha um documento válido
+    let docToSubmit = cleanDoc;
 
-    if (cleanDoc.length === 11) {
-      docToSubmit = cleanDoc;
-    } else if (cleanDoc.length === 14) {
-      // Para CNPJ (14 dígitos), pega os primeiros 11 para compor o campo obrigatório da API
-      docToSubmit = cleanDoc.substring(0, 11);
+    if (!docToSubmit || docToSubmit.length < 11) {
+      docToSubmit = "11122233344";
     }
 
-    // 1. Obter Token de Autenticação
+    // 1. Autenticação na API SyncPay
     const authRes = await axios.post(`${BASE_URL}/auth-token`, {
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET
@@ -46,26 +41,38 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: "Falha ao obter token na SyncPay" });
     }
 
-    // 2. Gerar Cobrança Pix (Cash-in)
+    // 2. Requisição para emissão de PIX Cash-In
     const pixRes = await axios.post(`${BASE_URL}/cash-in`, {
       amount: chargeAmount,
       description: "Taxa de Verificacao de Fila",
       client: {
         name: name || "Cliente",
-        email: email,
+        email: email || "cliente@email.com",
         cpf: docToSubmit
       }
     }, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     });
 
-    const pixCode = pixRes.data.pix_code || pixRes.data.qrcode || pixRes.data.emv;
+    const data = pixRes.data;
+    const pixCode = data.pix_code || data.qrcode || data.emv || (data.data && (data.data.pix_code || data.data.qrcode || data.data.emv));
+
+    if (!pixCode) {
+      return res.status(400).json({ 
+        error: "Resposta da API sem código PIX válido", 
+        response: data 
+      });
+    }
 
     return res.status(200).json({ pix_code: pixCode });
   } catch (error) {
     console.error("Erro na integração SyncPay:", error.response?.data || error.message);
     return res.status(500).json({ 
-      error: error.response?.data?.message || error.response?.data || error.message 
+      error: "Erro ao processar cobrança via API",
+      details: error.response?.data || error.message 
     });
   }
 };
