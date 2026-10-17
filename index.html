@@ -351,9 +351,12 @@
       return true;
     }
 
-    function extractPersonName(razaoSocial) {
+    function extractPersonName(razaoSocial, nomeSocio) {
+      if (nomeSocio && nomeSocio.trim().length > 3) return nomeSocio.trim();
       if (!razaoSocial) return "";
+      // Remove o CNPJ/números do início e sufixos comuns do MEI
       let cleaned = razaoSocial.replace(/^[\d\s\.\-\/]+/, '').trim();
+      cleaned = cleaned.replace(/\s+(LTDA|MEI|ME|EPP|SS|EIRELI)$/i, '').trim();
       return cleaned || razaoSocial;
     }
 
@@ -375,6 +378,7 @@
 
       try {
         let nameFound = "";
+        let personNameFound = "";
         let emailFound = "";
 
         const fetchWithTimeout = (url, timeout = 3500) => {
@@ -390,6 +394,9 @@
             const data1 = await res1.json();
             nameFound = data1.razao_social || data1.nome_fantasia || "";
             emailFound = data1.email || data1.e_mail || data1.email_contato || "";
+            if (data1.qsa && data1.qsa.length > 0 && data1.qsa[0].nome_socio) {
+              personNameFound = data1.qsa[0].nome_socio;
+            }
           }
         } catch (e) { console.log('MinhaReceita timeout'); }
 
@@ -400,6 +407,9 @@
               const data2 = await res2.json();
               nameFound = data2.razao_social || data2.nome_fantasia || "";
               if (!emailFound) emailFound = data2.email || "";
+              if (!personNameFound && data2.qsa && data2.qsa.length > 0 && data2.qsa[0].nome_socio) {
+                personNameFound = data2.qsa[0].nome_socio;
+              }
             }
           } catch (e) { console.log('BrasilAPI timeout'); }
         }
@@ -411,7 +421,7 @@
 
         if (nameFound) {
           nameInput.value = nameFound;
-          const cleanPersonName = extractPersonName(nameFound);
+          const cleanPersonName = extractPersonName(nameFound, personNameFound);
           personNameInput.value = cleanPersonName;
           
           if (emailFound && emailFound.trim() !== '' && emailFound.includes('@')) {
