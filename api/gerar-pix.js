@@ -20,7 +20,8 @@ module.exports = async (req, res) => {
   try {
     const { name, email, cpf, amount } = req.body || {};
 
-    const chargeAmount = amount ? parseFloat(amount) : 6.90;
+    // Garante valor numérico válido formatado para 2 casas decimais
+    const chargeAmount = amount ? Number(parseFloat(amount).toFixed(2)) : 6.90;
 
     let cleanDoc = (cpf || "").replace(/\D/g, '');
     let docToSubmit = cleanDoc;
@@ -30,15 +31,24 @@ module.exports = async (req, res) => {
     }
 
     // 1. Autenticação na API SyncPay
-    const authRes = await axios.post(`${BASE_URL}/auth-token`, {
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET
-    });
-
-    const token = authRes.data.access_token || authRes.data.token;
+    let token = "";
+    try {
+      const authRes = await axios.post(`${BASE_URL}/auth-token`, {
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET
+      });
+      token = authRes.data.access_token || authRes.data.token || (authRes.data.data && authRes.data.data.token);
+    } catch (authErr) {
+      const authErrorDetails = authErr.response?.data || authErr.message;
+      console.error("Erro na autenticação SyncPay:", authErrorDetails);
+      return res.status(400).json({
+        error: "Falha na autenticação com a API SyncPay (verifique Client ID / Secret)",
+        details: authErrorDetails
+      });
+    }
 
     if (!token) {
-      return res.status(400).json({ error: "Falha ao obter token na SyncPay" });
+      return res.status(400).json({ error: "Token de acesso não retornado pela SyncPay" });
     }
 
     // 2. Requisição para emissão de PIX Cash-In
@@ -58,21 +68,22 @@ module.exports = async (req, res) => {
     });
 
     const data = pixRes.data;
-    const pixCode = data.pix_code || data.qrcode || data.emv || (data.data && (data.data.pix_code || data.data.qrcode || data.data.emv));
+    const pixCode = data.pix_code || data.qrcode || data.emv || (data.data && (data.data.pix_code || data.data.qrcode || data.data.emv || data.data.pix_key));
 
     if (!pixCode) {
       return res.status(400).json({ 
         error: "Resposta da API sem código PIX válido", 
-        response: data 
+        details: data 
       });
     }
 
     return res.status(200).json({ pix_code: pixCode });
   } catch (error) {
-    console.error("Erro na integração SyncPay:", error.response?.data || error.message);
+    const errorData = error.response?.data || error.message;
+    console.error("Erro na integração SyncPay:", errorData);
     return res.status(500).json({ 
-      error: "Erro ao processar cobrança via API",
-      details: error.response?.data || error.message 
+      error: typeof errorData === 'object' ? JSON.stringify(errorData) : errorData,
+      details: errorData 
     });
   }
 };
