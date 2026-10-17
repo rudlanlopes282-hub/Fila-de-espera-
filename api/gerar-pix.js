@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
     // 2. Gerar Cobrança Pix (Cash-in)
     const pixRes = await axios.post(`${BASE_URL}/cash-in`, {
       amount: chargeAmount,
-      description: "Taxa de Verificacao TikTok",
+      description: "Taxa de Verificacao de Fila",
       client: {
         name: name || "Cliente",
         email: email,
