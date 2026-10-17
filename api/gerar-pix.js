@@ -20,16 +20,17 @@ module.exports = async (req, res) => {
   try {
     const { name, email, cpf, amount } = req.body || {};
 
+    // Usa o valor recebido do front-end ou aplica 6.90 como fallback
     const chargeAmount = amount ? parseFloat(amount) : 6.90;
 
     // Tratar o documento para enviar um formato válido de 11 dígitos para a API do SyncPay
     let cleanDoc = (cpf || "").replace(/\D/g, '');
-    let docToSubmit = "11122233344"; // Fallback caso não venha nada
+    let docToSubmit = "11122233344"; // Fallback padrão caso não venha um documento válido
 
     if (cleanDoc.length === 11) {
       docToSubmit = cleanDoc;
     } else if (cleanDoc.length === 14) {
-      // Caso venha um CNPJ (14 dígitos), pega os primeiros 11 para compor o campo obrigatório da API
+      // Para CNPJ (14 dígitos), pega os primeiros 11 para compor o campo obrigatório da API
       docToSubmit = cleanDoc.substring(0, 11);
     }
 
