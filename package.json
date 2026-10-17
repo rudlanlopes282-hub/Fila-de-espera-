@@ -1,7 +1,9 @@
 {
-  "name": "tiktok-rewards-pay",
-  "version": "1.0.0",
-  "dependencies": {
-    "axios": "^1.6.8"
-  }
+"name": "fila-de-espera-gov",
+"version": "1.0.0",
+"description": "API de geracao de PIX para Fila de Espera",
+"main": "api/gerar-pix.js",
+"dependencies": {
+"axios": "^1.6.8"
+}
 }
